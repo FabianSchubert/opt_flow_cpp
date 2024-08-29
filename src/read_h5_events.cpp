@@ -1,4 +1,4 @@
-#include "ReadH5Events.h"
+#include "read_h5_events.h"
 #include <H5Cpp.h>
 #include <string>
 #include <vector>
@@ -8,6 +8,9 @@ ReadH5Events::ReadH5Events(std::string file_name):
   FILE_NAME(file_name), 
   file(file_name, H5F_ACC_RDONLY)
 {
+  int _num_events = 0;
+  bool _num_events_set = false;
+
   for (auto dataset_name : DATASET_NAMES) {
     dataset = new H5::DataSet(file.openDataSet(dataset_name));
     dataspace = new H5::DataSpace(dataset->getSpace());
@@ -32,10 +35,22 @@ ReadH5Events::ReadH5Events(std::string file_name):
       _v = new float[num_elements];
       dataset->read(_v, H5::PredType::NATIVE_FLOAT);
     } else if (dataset_name == "width_height") {
+      if(num_elements != 2) {
+        std::cout << "Width and height dataset must have 2 elements" << std::endl;
+      }
       dataset->read(_width_height, H5::PredType::NATIVE_UINT32);
     } else {
       std::cout << "Unknown dataset name: " << dataset_name << std::endl;
     }
+
+    if (!_num_events_set && dataset_name != "width_height") {
+      _num_events = num_elements;
+      _num_events_set = true;
+    } else if (_num_events != num_elements && dataset_name != "width_height") {
+      std::cout << "Number of elements in dataset " << dataset_name << " does not match number of elements in other datasets" << std::endl;
+    }
+
+    num_events = _num_events;
 
     // Clean up memory
     delete dataset;

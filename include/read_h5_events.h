@@ -14,13 +14,23 @@ class ReadH5Events {
     int height();
     int width();
 
+    int num_events;
+
     uint32_t t(int i);
     uint16_t x(int i);
     uint16_t y(int i);
     uint8_t p(int i);
     float u(int i);
     float v(int i);
-     
+    
+    uint32_t* _t;
+    uint16_t* _x;
+    uint16_t* _y;
+    uint8_t* _p;
+    float* _u;
+    float* _v;
+    uint32_t _width_height[2];
+
   private:
     std::string FILE_NAME;
     // init vector with strings of dataset names (t, x, y, p)
@@ -29,13 +39,6 @@ class ReadH5Events {
     H5::DataSet* dataset;
     H5::DataSpace* dataspace;
     hsize_t dims_out[1];
-    uint32_t* _t;
-    uint16_t* _x;
-    uint16_t* _y;
-    uint8_t* _p;
-    float* _u;
-    float* _v;
-    uint32_t _width_height[2];
 };
 
 
