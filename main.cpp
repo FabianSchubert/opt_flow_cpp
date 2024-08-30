@@ -1,6 +1,15 @@
 #include <iostream>
+#include <SDL2/SDL.h>
 #include "read_h5_events.h"
 #include "stream_events.h"
+#include "gui.h"
+
+const int WIDTH = 320;
+const int HEIGHT = 240;
+const int N_PIX = WIDTH * HEIGHT;
+
+const int WIND_WIDTH = 2 * WIDTH;
+const int WIND_HEIGHT = 2 * HEIGHT;
 
 // add command line arguments
 int main(int argc, char** argv) {
@@ -33,6 +42,21 @@ int main(int argc, char** argv) {
         break;
       }
     }
+    
+    SDL_Window* window;
+    SDL_Renderer* renderer;
 
+    init_sdl(window, renderer, WIND_WIDTH, WIND_HEIGHT);
+
+    SDL_Texture* texture = SDL_CreateTexture(
+    renderer, 
+    SDL_PIXELFORMAT_ARGB8888, 
+    SDL_TEXTUREACCESS_STREAMING, 
+    WIDTH, HEIGHT);
+
+    SDL_DestroyWindow(window);
+    SDL_DestroyRenderer(renderer);
+    SDL_Quit();
+    
     return 0;
 }
