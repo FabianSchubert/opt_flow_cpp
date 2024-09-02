@@ -1,4 +1,5 @@
 #include <iostream>
+#include <fstream>
 #include <SDL2/SDL.h>
 #include "read_h5_events.h"
 #include "stream_events.h"
@@ -6,13 +7,14 @@
 #include "data_utils.h"
 #include "opt_flow.h"
 #include "viz.h"
+#include "json.hpp"
 
 int main(int argc, char **argv)
 {
 
   if (argc != 4)
   {
-    std::cout << "Usage: " << argv[0] << " <file_name> <DT in ms> <kernel half size in px>" << std::endl;
+    std::cout << "Usage: " << argv[0] << " <file_name> <opt_flow_config_file_name> <DT in ms>" << std::endl;
     return 1;
   }
   else
@@ -21,8 +23,9 @@ int main(int argc, char **argv)
   }
 
   std::string file_name = argv[1];
-  const float DT = std::stof(argv[2]);
-  const int KERN_HALF = std::stoi(argv[3]);
+  std::string opt_flow_config_file_name = argv[2];
+  const float DT = std::stof(argv[3]);
+  //const int KERN_HALF = std::stoi(argv[3]);
 
   ReadH5Events events(file_name);
   StreamEvents stream_events(file_name, DT);
@@ -48,7 +51,17 @@ int main(int argc, char **argv)
   float *u_est = new float[events.num_events];
   float *v_est = new float[events.num_events];
 
-  OptFlow opt_flow(WIDTH, HEIGHT, 50.0, 0.1, KERN_HALF);
+  // load json config for optical flow
+  std::ifstream conf_file(opt_flow_config_file_name);
+  nlohmann::json json_conf = nlohmann::json::parse(conf_file);
+  conf_file.close();
+
+  const int KERN_HALF = (int)(json_conf["kern_half"]);
+  const float TAU = (float)(json_conf["tau"]);
+  const float G_REG = (float)(json_conf["g_reg"]);
+  const float SCALE = (float)(json_conf["scale_viz"]);
+
+  OptFlow opt_flow(WIDTH, HEIGHT, TAU, G_REG, KERN_HALF);
 
   uint8_t tex_data[N_PIX * 4];
 
@@ -60,7 +73,7 @@ int main(int argc, char **argv)
   SDL_Window *window;
   SDL_Renderer *renderer;
 
-  window = SDL_CreateWindow("First program", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIND_WIDTH, WIND_HEIGHT, SDL_WINDOW_OPENGL);
+  window = SDL_CreateWindow("Optical Flow Demo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIND_WIDTH, WIND_HEIGHT, SDL_WINDOW_OPENGL);
   if (window == NULL)
   {
     std::cout << "Error window creation";
@@ -103,10 +116,13 @@ int main(int argc, char **argv)
 
     set_array<uint8_t>(tex_data, N_PIX * 4, (uint8_t)(0));
 
-    update_flow_pixels(x, y, u_est, v_est, tex_data,
-                        num_events_in_bin, N_PIX, WIDTH, HEIGHT, 1.0f);
+    update_flow_pixels(x, y, u_est + evt_start_id_current_bin, v_est + evt_start_id_current_bin, tex_data,
+                       num_events_in_bin, N_PIX, WIDTH, HEIGHT, SCALE);
 
-    //update_event_pixels(x, y, p, tex_data, num_events_in_bin, N_PIX, WIDTH, HEIGHT);
+    // update_flow_pixels(x, y, u, v, tex_data,
+    //                     num_events_in_bin, N_PIX, WIDTH, HEIGHT, 1.0f);
+
+    // update_event_pixels(x, y, p, tex_data, num_events_in_bin, N_PIX, WIDTH, HEIGHT);
 
     update_texture(texture, tex_data, N_PIX);
 

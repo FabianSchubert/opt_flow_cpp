@@ -18,7 +18,13 @@ OptFlow::OptFlow(int _width, int _height, float _tau, float _g_reg, int _kern_ha
     tau = _tau;
     g_reg = _g_reg;
     kern_half = (uint8_t)(_kern_half);
-    std::cout << "kern_half: " << (int)kern_half << std::endl;
+
+    kern_norm = 0.0;
+    for(int dx = -kern_half; dx < kern_half + 1; dx++){
+        for(int dy = -kern_half; dy < kern_half + 1; dy++){
+            kern_norm += kern_weight(dx, dy);
+        }
+    }
 };
 
 OptFlow::~OptFlow()
@@ -52,9 +58,9 @@ void OptFlow::update_flow(uint32_t *t, uint16_t *x, uint16_t *y, uint8_t *p,
 
             for(int dx = -kern_half; dx < kern_half + 1; dx++){
                 for(int dy = -kern_half; dy < kern_half + 1; dy++){
-                    float wx = kern_weight(dx, dy);
+                    float wx = kern_weight(dx, dy) / kern_norm;
                     int idx2 = x[i] + dx + (y[i] + dy) * width;
-                    if(idx2 < n_pix){
+                    if(idx2 > 0 && idx2 < n_pix){
                         float dt = (t[i] - t_prev[idx2])/1000.0;
                         float wt = t_weight(dt);
                         _alpha_x += -wx * wt * dx * (dt * a_t0[idx2] + a_t1[idx2]);
@@ -64,8 +70,8 @@ void OptFlow::update_flow(uint32_t *t, uint16_t *x, uint16_t *y, uint8_t *p,
                     }
                 }
             }
-            u[i] = _alpha_x / (_beta + g_reg);
-            v[i] = _alpha_y / (_beta + g_reg);
+            u[i] = 1000.0 * _alpha_x / (_beta + g_reg); // x 1000 to get output in pixels per second
+            v[i] = 1000.0 * _alpha_y / (_beta + g_reg);
         }
     }
 };

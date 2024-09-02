@@ -26,6 +26,8 @@ private:
     float g_reg;
     uint8_t kern_half;
 
+    float kern_norm;
+
     float t_weight(float dt);
 
     float kern_weight(int dx, int dy);
