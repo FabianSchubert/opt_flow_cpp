@@ -1,0 +1,32 @@
+[
+{
+  "directory": "/its/home/fs388/repos/opt_flow_cpp/build",
+  "command": "/usr/bin/g++   -I/its/home/fs388/repos/opt_flow_cpp/include -I/its/home/fs388/repos/opt_flow_cpp/OptFlow -I/usr/include/SDL2 -I/its/home/fs388/miniconda3/include  -g   -o CMakeFiles/optflow.dir/main.cpp.o -c /its/home/fs388/repos/opt_flow_cpp/main.cpp",
+  "file": "/its/home/fs388/repos/opt_flow_cpp/main.cpp"
+},
+{
+  "directory": "/its/home/fs388/repos/opt_flow_cpp/build",
+  "command": "/usr/bin/g++   -I/its/home/fs388/repos/opt_flow_cpp/include -I/its/home/fs388/repos/opt_flow_cpp/OptFlow -I/usr/include/SDL2 -I/its/home/fs388/miniconda3/include  -g   -o CMakeFiles/optflow.dir/src/read_h5_events.cpp.o -c /its/home/fs388/repos/opt_flow_cpp/src/read_h5_events.cpp",
+  "file": "/its/home/fs388/repos/opt_flow_cpp/src/read_h5_events.cpp"
+},
+{
+  "directory": "/its/home/fs388/repos/opt_flow_cpp/build",
+  "command": "/usr/bin/g++   -I/its/home/fs388/repos/opt_flow_cpp/include -I/its/home/fs388/repos/opt_flow_cpp/OptFlow -I/usr/include/SDL2 -I/its/home/fs388/miniconda3/include  -g   -o CMakeFiles/optflow.dir/src/stream_events.cpp.o -c /its/home/fs388/repos/opt_flow_cpp/src/stream_events.cpp",
+  "file": "/its/home/fs388/repos/opt_flow_cpp/src/stream_events.cpp"
+},
+{
+  "directory": "/its/home/fs388/repos/opt_flow_cpp/build",
+  "command": "/usr/bin/g++   -I/its/home/fs388/repos/opt_flow_cpp/include -I/its/home/fs388/repos/opt_flow_cpp/OptFlow -I/usr/include/SDL2 -I/its/home/fs388/miniconda3/include  -g   -o CMakeFiles/optflow.dir/src/gui.cpp.o -c /its/home/fs388/repos/opt_flow_cpp/src/gui.cpp",
+  "file": "/its/home/fs388/repos/opt_flow_cpp/src/gui.cpp"
+},
+{
+  "directory": "/its/home/fs388/repos/opt_flow_cpp/build",
+  "command": "/usr/bin/g++   -I/its/home/fs388/repos/opt_flow_cpp/include -I/its/home/fs388/repos/opt_flow_cpp/OptFlow -I/usr/include/SDL2 -I/its/home/fs388/miniconda3/include  -g   -o CMakeFiles/optflow.dir/src/data_utils.cpp.o -c /its/home/fs388/repos/opt_flow_cpp/src/data_utils.cpp",
+  "file": "/its/home/fs388/repos/opt_flow_cpp/src/data_utils.cpp"
+},
+{
+  "directory": "/its/home/fs388/repos/opt_flow_cpp/build",
+  "command": "/usr/bin/g++   -I/its/home/fs388/repos/opt_flow_cpp/include -I/its/home/fs388/repos/opt_flow_cpp/OptFlow -I/usr/include/SDL2 -I/its/home/fs388/miniconda3/include  -g   -o CMakeFiles/optflow.dir/src/opt_flow.cpp.o -c /its/home/fs388/repos/opt_flow_cpp/src/opt_flow.cpp",
+  "file": "/its/home/fs388/repos/opt_flow_cpp/src/opt_flow.cpp"
+}
+]

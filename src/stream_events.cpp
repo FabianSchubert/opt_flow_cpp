@@ -49,7 +49,7 @@ StreamEvents::~StreamEvents()
 
 
 void StreamEvents::get(uint32_t* &_t, uint16_t* &_x, uint16_t* &_y, uint8_t* &_p,
-        float* &_u, float* &_v, int &num_events_in_bin){
+        float* &_u, float* &_v, int &num_events_in_bin, int &bin_id, int &start_id){
   if(current_bin >= n_bins){
     num_events_in_bin = 0;
     _t = nullptr;
@@ -59,17 +59,19 @@ void StreamEvents::get(uint32_t* &_t, uint16_t* &_x, uint16_t* &_y, uint8_t* &_p
     _u = nullptr;
     _v = nullptr;
   } else {
-    int start_id = current_event;
+    start_id = current_event;
+    bin_id = current_bin;
+    
     int end_id = bin_id_end[current_bin];
 
-    num_events_in_bin = end_id - start_id;
+    num_events_in_bin = end_id - current_event;
 
-    _t = events._t + start_id;
-    _x = events._x + start_id;
-    _y = events._y + start_id;
-    _p = events._p + start_id;
-    _u = events._u + start_id;
-    _v = events._v + start_id;
+    _t = events._t + current_event;
+    _x = events._x + current_event;
+    _y = events._y + current_event;
+    _p = events._p + current_event;
+    _u = events._u + current_event;
+    _v = events._v + current_event;
 
     current_event = end_id;
     current_bin++;
