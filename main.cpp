@@ -60,8 +60,9 @@ int main(int argc, char **argv)
   const float TAU = (float)(json_conf["tau"]);
   const float G_REG = (float)(json_conf["g_reg"]);
   const float SCALE = (float)(json_conf["scale_viz"]);
+  const float ALPHA_HS = (float)(json_conf["alpha_hs"]);
 
-  OptFlow opt_flow(WIDTH, HEIGHT, TAU, G_REG, KERN_HALF);
+  OptFlow opt_flow(WIDTH, HEIGHT, TAU, G_REG, ALPHA_HS, KERN_HALF);
 
   uint8_t tex_data[N_PIX * 4];
 

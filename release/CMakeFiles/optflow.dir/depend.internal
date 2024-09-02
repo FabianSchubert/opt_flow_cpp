@@ -4,6 +4,7 @@
 CMakeFiles/optflow.dir/main.cpp.o
  ../include/data_utils.h
  ../include/gui.h
+ ../include/json.hpp
  ../include/opt_flow.h
  ../include/read_h5_events.h
  ../include/stream_events.h
