@@ -7,6 +7,7 @@ CMakeFiles/optflow.dir/main.cpp.o
  ../include/opt_flow.h
  ../include/read_h5_events.h
  ../include/stream_events.h
+ ../include/viz.h
  /its/home/fs388/miniconda3/include/H5ACpublic.h
  /its/home/fs388/miniconda3/include/H5AbstractDs.h
  /its/home/fs388/miniconda3/include/H5Apublic.h
@@ -89,6 +90,7 @@ CMakeFiles/optflow.dir/main.cpp.o
  /its/home/fs388/repos/opt_flow_cpp/main.cpp
 CMakeFiles/optflow.dir/src/data_utils.cpp.o
  ../include/data_utils.h
+ ../include/viz.h
  /its/home/fs388/repos/opt_flow_cpp/src/data_utils.cpp
 CMakeFiles/optflow.dir/src/gui.cpp.o
  ../include/gui.h
@@ -261,3 +263,6 @@ CMakeFiles/optflow.dir/src/stream_events.cpp.o
  /its/home/fs388/miniconda3/include/H5version.h
  /its/home/fs388/miniconda3/include/hdf5.h
  /its/home/fs388/repos/opt_flow_cpp/src/stream_events.cpp
+CMakeFiles/optflow.dir/src/viz.cpp.o
+ ../include/viz.h
+ /its/home/fs388/repos/opt_flow_cpp/src/viz.cpp

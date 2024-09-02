@@ -285,6 +285,33 @@ src/stream_events.cpp.s:
 	$(MAKE) -f CMakeFiles/optflow.dir/build.make CMakeFiles/optflow.dir/src/stream_events.cpp.s
 .PHONY : src/stream_events.cpp.s
 
+src/viz.o: src/viz.cpp.o
+
+.PHONY : src/viz.o
+
+# target to build an object file
+src/viz.cpp.o:
+	$(MAKE) -f CMakeFiles/optflow.dir/build.make CMakeFiles/optflow.dir/src/viz.cpp.o
+.PHONY : src/viz.cpp.o
+
+src/viz.i: src/viz.cpp.i
+
+.PHONY : src/viz.i
+
+# target to preprocess a source file
+src/viz.cpp.i:
+	$(MAKE) -f CMakeFiles/optflow.dir/build.make CMakeFiles/optflow.dir/src/viz.cpp.i
+.PHONY : src/viz.cpp.i
+
+src/viz.s: src/viz.cpp.s
+
+.PHONY : src/viz.s
+
+# target to generate assembly for a file
+src/viz.cpp.s:
+	$(MAKE) -f CMakeFiles/optflow.dir/build.make CMakeFiles/optflow.dir/src/viz.cpp.s
+.PHONY : src/viz.cpp.s
+
 # Help Target
 help:
 	@echo "The following are some of the valid targets for this Makefile:"
@@ -312,6 +339,9 @@ help:
 	@echo "... src/stream_events.o"
 	@echo "... src/stream_events.i"
 	@echo "... src/stream_events.s"
+	@echo "... src/viz.o"
+	@echo "... src/viz.i"
+	@echo "... src/viz.s"
 .PHONY : help
 
 

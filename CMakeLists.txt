@@ -16,7 +16,13 @@ if(HDF5_FOUND)
   link_libraries(${HDF5_LIBRARIES})
 endif()
 
-add_executable(optflow main.cpp src/read_h5_events.cpp src/stream_events.cpp src/gui.cpp src/data_utils.cpp src/opt_flow.cpp)
+add_executable(optflow main.cpp
+  src/read_h5_events.cpp
+  src/stream_events.cpp
+  src/gui.cpp
+  src/data_utils.cpp
+  src/opt_flow.cpp
+  src/viz.cpp)
 
 target_link_libraries(optflow ${HDF5_LIBRARIES})
 target_link_libraries(optflow ${SDL2_LIBRARIES})

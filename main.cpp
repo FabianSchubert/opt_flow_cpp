@@ -5,13 +5,14 @@
 #include "gui.h"
 #include "data_utils.h"
 #include "opt_flow.h"
+#include "viz.h"
 
 int main(int argc, char **argv)
 {
 
-  if (argc != 3)
+  if (argc != 4)
   {
-    std::cout << "Usage: " << argv[0] << " <file_name> <DT in ms>" << std::endl;
+    std::cout << "Usage: " << argv[0] << " <file_name> <DT in ms> <kernel half size in px>" << std::endl;
     return 1;
   }
   else
@@ -21,6 +22,7 @@ int main(int argc, char **argv)
 
   std::string file_name = argv[1];
   const float DT = std::stof(argv[2]);
+  const int KERN_HALF = std::stoi(argv[3]);
 
   ReadH5Events events(file_name);
   StreamEvents stream_events(file_name, DT);
@@ -46,7 +48,7 @@ int main(int argc, char **argv)
   float *u_est = new float[events.num_events];
   float *v_est = new float[events.num_events];
 
-  OptFlow opt_flow(WIDTH, HEIGHT);
+  OptFlow opt_flow(WIDTH, HEIGHT, 50.0, 0.1, KERN_HALF);
 
   uint8_t tex_data[N_PIX * 4];
 
@@ -100,7 +102,11 @@ int main(int argc, char **argv)
     }
 
     set_array<uint8_t>(tex_data, N_PIX * 4, (uint8_t)(0));
-    update_event_pixels(x, y, p, tex_data, num_events_in_bin, N_PIX, WIDTH, HEIGHT);
+
+    update_flow_pixels(x, y, u_est, v_est, tex_data,
+                        num_events_in_bin, N_PIX, WIDTH, HEIGHT, 1.0f);
+
+    //update_event_pixels(x, y, p, tex_data, num_events_in_bin, N_PIX, WIDTH, HEIGHT);
 
     update_texture(texture, tex_data, N_PIX);
 
