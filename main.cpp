@@ -24,7 +24,7 @@ int main(int argc, char **argv)
 
   std::string file_name = argv[1];
   std::string opt_flow_config_file_name = argv[2];
-  const float DT = std::stof(argv[3]);
+  const float DT = std::stof(argv[3]) * 1000.0f;
   //const int KERN_HALF = std::stoi(argv[3]);
 
   ReadH5Events events(file_name);
@@ -57,12 +57,13 @@ int main(int argc, char **argv)
   conf_file.close();
 
   const int KERN_HALF = (int)(json_conf["kern_half"]);
+  const int KERN_HALF_HS = (int)(json_conf["kern_half_hs"]);
   const float TAU = (float)(json_conf["tau"]);
   const float G_REG = (float)(json_conf["g_reg"]);
   const float SCALE = (float)(json_conf["scale_viz"]);
   const float ALPHA_HS = (float)(json_conf["alpha_hs"]);
 
-  OptFlow opt_flow(WIDTH, HEIGHT, TAU, G_REG, ALPHA_HS, KERN_HALF);
+  OptFlow opt_flow(WIDTH, HEIGHT, TAU, G_REG, ALPHA_HS, KERN_HALF, KERN_HALF_HS);
 
   uint8_t tex_data[N_PIX * 4];
 
