@@ -20,6 +20,8 @@ if(HDF5_FOUND)
   link_libraries(${HDF5_LIBRARIES})
 endif()
 
+find_package(OpenMP)
+
 add_executable(optflow main.cpp
   src/read_h5_events.cpp
   src/stream_events.cpp
@@ -31,3 +33,5 @@ add_executable(optflow main.cpp
 target_link_libraries(optflow ${HDF5_LIBRARIES})
 target_link_libraries(optflow ${SDL2_LIBRARIES})
 target_link_libraries(optflow -lffi)
+target_link_libraries(optflow OpenMP::OpenMP_CXX)
+

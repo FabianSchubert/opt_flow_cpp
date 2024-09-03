@@ -1,6 +1,7 @@
 #include <stdint.h>
 #include <math.h>
 #include <iostream>
+#include <omp.h>
 #include "opt_flow.h"
 
 
@@ -34,7 +35,9 @@ OptFlow::OptFlow(int _width, int _height, float _tau, float _g_reg, float _alpha
     g_reg = _g_reg;
     alpha_hs = _alpha_hs;
     kern_half = (uint8_t)(_kern_half);
+    kern_size = (uint16_t)((2 * kern_half + 1) * (2 * kern_half + 1));
     kern_half_hs = (uint8_t)(_kern_half_hs);
+    kern_size_hs = (uint16_t)((2 * kern_half_hs + 1) * (2 * kern_half_hs + 1));
 
     kern_norm = 0.0;
     for(int dx = -kern_half; dx < kern_half + 1; dx++){
@@ -66,6 +69,7 @@ OptFlow::~OptFlow()
 void OptFlow::update_flow(uint32_t *t, uint16_t *x, uint16_t *y, uint8_t *p,
                           float *u, float *v, int n_events)
 {
+    //#pragma omp parallel for
     for (int i = 0; i < n_events; i++)
     {
         int idx = x[i] + y[i] * width;
@@ -84,6 +88,25 @@ void OptFlow::update_flow(uint32_t *t, uint16_t *x, uint16_t *y, uint8_t *p,
             float _alpha_y = 0.0;
             float _beta = 0.0;
 
+            
+            for(int j=0; j<kern_size;j++){
+                //std::cout << omp_get_thread_num() << std::endl;
+                int dx = j % (2 * kern_half + 1) - kern_half;
+                int dy = j / (2 * kern_half + 1) - kern_half;
+
+                float wx = kern_weight(dx, dy) / kern_norm;
+                int idx2 = x[i] + dx + (y[i] + dy) * width;
+                if(idx2 > 0 && idx2 < n_pix){
+                    float dt = (t[i] - t_prev[idx2])/1000.0;
+                    float wt_pair = t_weight(dt);
+                    _alpha_x += -wx * wt_pair * dx * (dt * a_t0[idx2] + a_t1[idx2]);
+                    _alpha_y += -wx * wt_pair * dy * (dt * a_t0[idx2] + a_t1[idx2]);
+
+                    _beta += wx * wt_pair * (dt * dt * a_t0[idx2] + 2 * dt * a_t1[idx2] + a_t2[idx2]);
+                }
+            }
+
+            /*
             for(int dx = -kern_half; dx < kern_half + 1; dx++){
                 for(int dy = -kern_half; dy < kern_half + 1; dy++){
                     if(dx == 0 && dy == 0){
@@ -100,8 +123,12 @@ void OptFlow::update_flow(uint32_t *t, uint16_t *x, uint16_t *y, uint8_t *p,
                         _beta += wx * wt_pair * (dt * dt * a_t0[idx2] + 2 * dt * a_t1[idx2] + a_t2[idx2]);
                     }
                 }
-            }
+            }*/
 
+            //u[i] = 1000.0 * _alpha_x / (_beta + g_reg); // x 1000 to get output in pixels per second
+            //v[i] = 1000.0 * _alpha_y / (_beta + g_reg);
+
+            
             u_raw[idx] = _alpha_x / (_beta + g_reg);
             v_raw[idx] = _alpha_y / (_beta + g_reg);
 
@@ -127,15 +154,15 @@ void OptFlow::update_flow(uint32_t *t, uint16_t *x, uint16_t *y, uint8_t *p,
                 }
             }
 
-            u_hs = u_hs / (beta_hs + 1e-3);
-            v_hs = v_hs / (beta_hs + 1e-3);
+            u_hs = u_hs / (beta_hs + 1e-8);
+            v_hs = v_hs / (beta_hs + 1e-8);
             
-            float l_raw = sqrt(u_raw[idx] * u_raw[idx] + v_raw[idx] * v_raw[idx]);
+            float l_raw = sqrt(u_raw[idx] * u_raw[idx] + v_raw[idx] * v_raw[idx]) + 1e-8;
             
-            float hs_dotraw = (u_hs * u_raw[idx] + v_hs * v_raw[idx]) / (l_raw + 1e-1);
+            float hs_dotraw = (u_hs * u_raw[idx] + v_hs * v_raw[idx]) / l_raw;
 
-            float u_hs_proj = u_hs + 1.0 * (l_raw - hs_dotraw) * u_raw[idx] / (l_raw + 1e-1);
-            float v_hs_proj = v_hs + 1.0 * (l_raw - hs_dotraw) * v_raw[idx] / (l_raw + 1e-1);
+            float u_hs_proj = 0.2 * (u_hs + (l_raw - hs_dotraw) * u_raw[idx] / l_raw) + 0.8 * u_hs;
+            float v_hs_proj = 0.2 * (v_hs + (l_raw - hs_dotraw) * v_raw[idx] / l_raw) + 0.8 * v_hs;
 
             u_filt[idx] = u_hs_proj;
             v_filt[idx] = v_hs_proj;
@@ -148,7 +175,7 @@ void OptFlow::update_flow(uint32_t *t, uint16_t *x, uint16_t *y, uint8_t *p,
 
             //u[i] = 1000.0 * _alpha_x / (_beta + g_reg); // x 1000 to get output in pixels per second
             //v[i] = 1000.0 * _alpha_y / (_beta + g_reg);
-
+            
             
         }
     }

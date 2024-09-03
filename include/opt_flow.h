@@ -31,6 +31,8 @@ private:
     float alpha_hs;
     uint8_t kern_half;
     uint8_t kern_half_hs;
+    uint16_t kern_size;
+    uint16_t kern_size_hs;
 
     float kern_norm;
     float kern_norm_hs;

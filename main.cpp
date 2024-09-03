@@ -1,6 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <SDL2/SDL.h>
+#include <chrono>
 #include "read_h5_events.h"
 #include "stream_events.h"
 #include "gui.h"
@@ -32,6 +33,8 @@ int main(int argc, char **argv)
 
   const int WIDTH = events.width();
   const int HEIGHT = events.height();
+
+  std::cout << "Width: " << WIDTH << " Height: " << HEIGHT << std::endl;
 
   const int N_PIX = WIDTH * HEIGHT;
 
@@ -92,6 +95,8 @@ int main(int argc, char **argv)
 
   SDL_Event e;
 
+  std::chrono::steady_clock::time_point begin = std::chrono::steady_clock::now();
+
   bool running = true;
 
   while (running)
@@ -131,6 +136,11 @@ int main(int argc, char **argv)
     draw(renderer, texture);
   }
 
+  std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
+
+  std::cout << "Elapsed time in microseconds: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << std::endl;
+  std::cout << "Processed " << events.num_events / (std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000000.0) << " events per second" << std::endl;
+  std::cout << "Required by Dataset: " << events.num_events / (stream_events.t_max / 1000000.0) << " events per second" << std::endl;
   SDL_DestroyWindow(window);
   SDL_DestroyRenderer(renderer);
   SDL_Quit();
