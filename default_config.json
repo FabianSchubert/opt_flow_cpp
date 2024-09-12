@@ -1,8 +1,8 @@
 {
-    "tau": 2.5,
-    "g_reg": 0.1,
-    "kern_half": 2,
+    "tau": 5.0,
+    "g_reg": 2.0,
+    "kern_half": 1,
     "kern_half_hs": 7,
     "alpha_hs": 1.5,
-    "scale_viz": 200.0
+    "scale_viz": 10.0
 }

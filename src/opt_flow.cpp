@@ -11,24 +11,32 @@ OptFlow::OptFlow(int _width, int _height, float _tau, float _g_reg, float _alpha
     height = _height;
     n_pix = width * height;
 
-    a_t0 = new float[n_pix];
-    a_t1 = new float[n_pix];
-    a_t2 = new float[n_pix];
+    a_t0_p = new float[n_pix];
+    a_t1_p = new float[n_pix];
+    a_t2_p = new float[n_pix];
+    a_t0_n = new float[n_pix];
+    a_t1_n = new float[n_pix];
+    a_t2_n = new float[n_pix];
     u_raw = new float[n_pix];
     v_raw = new float[n_pix];
     u_filt = new float[n_pix];
     v_filt = new float[n_pix];
-    t_prev = new float[n_pix];
+    t_prev_p = new float[n_pix];
+    t_prev_n = new float[n_pix];
 
     for(int i = 0; i < n_pix; i++){
-        a_t0[i] = 0.0;
-        a_t1[i] = 0.0;
-        a_t2[i] = 0.0;
+        a_t0_p[i] = 0.0;
+        a_t1_p[i] = 0.0;
+        a_t2_p[i] = 0.0;
+        a_t0_n[i] = 0.0;
+        a_t1_n[i] = 0.0;
+        a_t2_n[i] = 0.0;
         u_raw[i] = 0.0;
         v_raw[i] = 0.0;
         u_filt[i] = 0.0;
         v_filt[i] = 0.0;
-        t_prev[i] = 0.0;
+        t_prev_p[i] = 0.0;
+        t_prev_n[i] = 0.0;
     }
 
     tau = _tau;
@@ -56,39 +64,55 @@ OptFlow::OptFlow(int _width, int _height, float _tau, float _g_reg, float _alpha
 
 OptFlow::~OptFlow()
 {
-    delete[] a_t0;
-    delete[] a_t1;
-    delete[] a_t2;
+    delete[] a_t0_p;
+    delete[] a_t1_p;
+    delete[] a_t2_p;
+    delete[] a_t0_n;
+    delete[] a_t1_n;
+    delete[] a_t2_n;
     delete[] u_raw;
     delete[] v_raw;
     delete[] u_filt;
     delete[] v_filt;
-    delete[] t_prev;
+    delete[] t_prev_p;
+    delete[] t_prev_n;
 };
 
 void OptFlow::update_flow(uint32_t *t, uint16_t *x, uint16_t *y, uint8_t *p,
                           float *u, float *v, int n_events)
 {
-    //#pragma omp parallel for
+    
+    uint8_t pol;
+    #pragma omp parallel for ordered
     for (int i = 0; i < n_events; i++)
     {
+        pol = p[i];
         int idx = x[i] + y[i] * width;
         if (idx < n_pix)
         {
-            float dt = (t[i] - t_prev[idx])/1000.0;
+            
+            float dt = (pol == 1 ? (t[i] - t_prev_p[idx]) : (t[i] - t_prev_n[idx]))/1000.0;
             float wt = t_weight(dt);
 
-            a_t2[idx] = wt * (dt * dt * a_t0[idx] + 2 * dt * a_t1[idx] + a_t2[idx]);
-            a_t1[idx] = wt * (dt * a_t0[idx] + a_t1[idx]);
-            a_t0[idx] = wt * a_t0[idx] + 1;
-
-            t_prev[idx] = t[i];
+            if(pol == 1){
+                a_t2_p[idx] = wt * (dt * dt * a_t0_p[idx] + 2 * dt * a_t1_p[idx] + a_t2_p[idx]);
+                a_t1_p[idx] = wt * (dt * a_t0_p[idx] + a_t1_p[idx]);
+                a_t0_p[idx] = wt * a_t0_p[idx] + 1;
+                t_prev_p[idx] = t[i];
+            } else {
+                a_t2_n[idx] = wt * (dt * dt * a_t0_n[idx] + 2 * dt * a_t1_n[idx] + a_t2_n[idx]);
+                a_t1_n[idx] = wt * (dt * a_t0_n[idx] + a_t1_n[idx]);
+                a_t0_n[idx] = wt * a_t0_n[idx] + 1;
+                t_prev_n[idx] = t[i];
+            }
+            
 
             float _alpha_x = 0.0;
             float _alpha_y = 0.0;
             float _beta = 0.0;
 
-            
+            {
+            //#pragma omp for
             for(int j=0; j<kern_size;j++){
                 //std::cout << omp_get_thread_num() << std::endl;
                 int dx = j % (2 * kern_half + 1) - kern_half;
@@ -96,15 +120,31 @@ void OptFlow::update_flow(uint32_t *t, uint16_t *x, uint16_t *y, uint8_t *p,
 
                 float wx = kern_weight(dx, dy) / kern_norm;
                 int idx2 = x[i] + dx + (y[i] + dy) * width;
-                if(idx2 > 0 && idx2 < n_pix){
-                    float dt = (t[i] - t_prev[idx2])/1000.0;
-                    float wt_pair = t_weight(dt);
-                    _alpha_x += -wx * wt_pair * dx * (dt * a_t0[idx2] + a_t1[idx2]);
-                    _alpha_y += -wx * wt_pair * dy * (dt * a_t0[idx2] + a_t1[idx2]);
 
-                    _beta += wx * wt_pair * (dt * dt * a_t0[idx2] + 2 * dt * a_t1[idx2] + a_t2[idx2]);
+                float _d_alpha_x = 0.0;
+                float _d_alpha_y = 0.0;
+                float _d_beta = 0.0;
+
+                if(idx2 > 0 && idx2 < n_pix){
+                    float dt = (pol == 1 ? (t[i] - t_prev_p[idx2]) : (t[i] - t_prev_n[idx2]))/1000.0;
+                    float wt_pair = t_weight(dt);
+                    float _a_t0 = (pol == 1) ? a_t0_p[idx2] : a_t0_n[idx2];
+                    float _a_t1 = (pol == 1) ? a_t1_p[idx2] : a_t1_n[idx2];
+                    float _a_t2 = (pol == 1) ? a_t2_p[idx2] : a_t2_n[idx2];
+
+                    _d_alpha_x = -wx * wt_pair * dx * (dt * _a_t0 + _a_t1);
+                    _d_alpha_y = -wx * wt_pair * dy * (dt * _a_t0 + _a_t1);
+
+                    _d_beta += wx * wt_pair * (dt * dt * _a_t0 + 2 * dt * _a_t1 + _a_t2);
                 }
+
+                _alpha_x = _alpha_x + _d_alpha_x;
+                _alpha_y = _alpha_y + _d_alpha_y;
+                _beta = _beta + _d_beta;
             }
+            }
+
+            
 
             /*
             for(int dx = -kern_half; dx < kern_half + 1; dx++){
@@ -125,10 +165,11 @@ void OptFlow::update_flow(uint32_t *t, uint16_t *x, uint16_t *y, uint8_t *p,
                 }
             }*/
 
-            //u[i] = 1000.0 * _alpha_x / (_beta + g_reg); // x 1000 to get output in pixels per second
-            //v[i] = 1000.0 * _alpha_y / (_beta + g_reg);
+            u[i] = 1000.0 * _alpha_x / (_beta + g_reg); // x 1000 to get output in pixels per second
+            v[i] = 1000.0 * _alpha_y / (_beta + g_reg);
 
             
+            /*
             u_raw[idx] = _alpha_x / (_beta + g_reg);
             v_raw[idx] = _alpha_y / (_beta + g_reg);
 
@@ -144,10 +185,15 @@ void OptFlow::update_flow(uint32_t *t, uint16_t *x, uint16_t *y, uint8_t *p,
                     float wx = kern_weight_hs(dx, dy) / kern_norm_hs;
                     int idx2 = x[i] + dx + (y[i] + dy) * width;
                     if(idx2 > 0 && idx2 < n_pix){
-                        float dt = (t[i] - t_prev[idx2])/1000.0;
+                        //float dt = (t[i] - t_prev[idx2])/1000.0;
+                        //float wt_pair = t_weight(dt);
+
+                        float dt = (pol == 1 ? (t[i] - t_prev_p[idx2]) : (t[i] - t_prev_n[idx2]))/1000.0;
                         float wt_pair = t_weight(dt);
-                        u_hs += wx * wt_pair * u_filt[idx2];
-                        v_hs += wx * wt_pair * v_filt[idx2];
+                        float _a_t0 = (pol == 1) ? a_t0_p[idx2] : a_t0_n[idx2];
+
+                        u_hs += wx * wt_pair * _a_t0 * u_filt[idx2];
+                        v_hs += wx * wt_pair * _a_t0 * v_filt[idx2];
 
                         beta_hs += wx * wt_pair;
                     }
@@ -176,7 +222,7 @@ void OptFlow::update_flow(uint32_t *t, uint16_t *x, uint16_t *y, uint8_t *p,
             //u[i] = 1000.0 * _alpha_x / (_beta + g_reg); // x 1000 to get output in pixels per second
             //v[i] = 1000.0 * _alpha_y / (_beta + g_reg);
             
-            
+            */
         }
     }
 };

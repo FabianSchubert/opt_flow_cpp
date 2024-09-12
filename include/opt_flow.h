@@ -17,14 +17,18 @@ private:
     int height;
     int n_pix;
 
-    float* a_t0;
-    float* a_t1;
-    float* a_t2;
+    float* a_t0_p;
+    float* a_t1_p;
+    float* a_t2_p;
+    float* a_t0_n;
+    float* a_t1_n;
+    float* a_t2_n;
     float* u_raw;
     float* v_raw;
     float* u_filt;
     float* v_filt;
-    float* t_prev;
+    float* t_prev_p;
+    float* t_prev_n;
 
     float tau;
     float g_reg;
