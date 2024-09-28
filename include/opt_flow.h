@@ -23,10 +23,14 @@ private:
     float* a_t0_n;
     float* a_t1_n;
     float* a_t2_n;
+
     float* u_raw;
     float* v_raw;
-    float* u_filt;
-    float* v_filt;
+    float* u_filt_p;
+    float* v_filt_p;
+    float* u_filt_n;
+    float* v_filt_n;
+
     float* t_prev_p;
     float* t_prev_n;
 
