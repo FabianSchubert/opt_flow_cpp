@@ -1,1 +1,1 @@
-Just me trying to learn c++ while implementing an optical flow algorithm
+C++ implementation of a simple optical flow algorithm for event-based camera sensor data.
