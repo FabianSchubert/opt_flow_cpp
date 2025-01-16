@@ -1,4 +1,4 @@
-#include <math.h>
+#include <cmath>
 #include <algorithm>
 #include "viz.h"
 
@@ -12,14 +12,15 @@ t clamp2(t x, t min, t max)
     return x;
 }
 
-void vect_to_rgb(float u, float v, int &r, int &g, int &b, float scale)
+void vect_to_rgb(const float u, const float v, int &r, int &g, int &b, const float scale)
 {
-    float angle = atan2(v, u);
-    float magnitude = std::min(1.0f, sqrt(u * u + v * v) / scale);
+    const float angle = std::atan2(v, u);
+    const float magnitude = std::min(1.0f, std::sqrt(u * u + v * v) / scale);
 
-    float hue = (angle + M_PI) / (2 * M_PI);
+    const float hue = (M_PI + angle) / (2 * M_PI);
 
-    r = (int)(magnitude * (clamp2<float>(2.0 - 6.0 * hue, 0.0, 1.0) + clamp2<float>(6.0 * hue - 4.0, 0.0, 1.0)) * 255);
-    g = (int)(magnitude * clamp2<float>(6.0 * hue, 0.0, 1.0) * clamp2<float>(4.0 - 6.0 * hue, 0.0, 1.0) * 255);
-    b = (int)(magnitude * clamp2<float>(6.0 * hue - 2.0, 0.0, 1.0) * clamp2<float>(6.0 - 6.0 * hue, 0.0, 1.0) * 255);
+    r = static_cast<int>(magnitude * (clamp2<float>(2.0 - 6.0 * hue, 0.0, 1.0) + clamp2<float>(6.0f * hue - 4.0f, 0.0f, 1.0f)) *
+                         255);
+    g = static_cast<int>(magnitude * clamp2<float>(6.0 * hue, 0.0, 1.0) * clamp2<float>(4.0f - 6.0f * hue, 0.0f, 1.0f) * 255);
+    b = static_cast<int>(magnitude * clamp2<float>(6.0 * hue - 2.0, 0.0, 1.0) * clamp2<float>(6.0f - 6.0f * hue, 0.0f, 1.0f) * 255);
 }

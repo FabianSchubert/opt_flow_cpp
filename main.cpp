@@ -7,7 +7,6 @@
 #include "gui.h"
 #include "data_utils.h"
 #include "opt_flow.h"
-#include "viz.h"
 #include "json.hpp"
 
 int main(int argc, char **argv)
@@ -26,7 +25,6 @@ int main(int argc, char **argv)
   std::string file_name = argv[1];
   std::string opt_flow_config_file_name = argv[2];
   const float DT = std::stof(argv[3]) * 1000.0f;
-  //const int KERN_HALF = std::stoi(argv[3]);
 
   ReadH5Events events(file_name);
   StreamEvents stream_events(file_name, DT);
@@ -51,20 +49,20 @@ int main(int argc, char **argv)
   int bin_id;
   int evt_start_id_current_bin;
 
-  float *u_est = new float[events.num_events];
-  float *v_est = new float[events.num_events];
+  auto u_est = new float[events.num_events];
+  auto v_est = new float[events.num_events];
 
   // load json config for optical flow
   std::ifstream conf_file(opt_flow_config_file_name);
   nlohmann::json json_conf = nlohmann::json::parse(conf_file);
   conf_file.close();
 
-  const int KERN_HALF = (int)(json_conf["kern_half"]);
-  const int KERN_HALF_HS = (int)(json_conf["kern_half_hs"]);
-  const float TAU = (float)(json_conf["tau"]);
-  const float G_REG = (float)(json_conf["g_reg"]);
-  const float SCALE = (float)(json_conf["scale_viz"]);
-  const float ALPHA_HS = (float)(json_conf["alpha_hs"]);
+  const auto KERN_HALF = static_cast<int>(json_conf["kern_half"]);
+  const auto KERN_HALF_HS = static_cast<int>(json_conf["kern_half_hs"]);
+  const auto TAU = static_cast<float>(json_conf["tau"]);
+  const auto G_REG = static_cast<float>(json_conf["g_reg"]);
+  const auto SCALE = static_cast<float>(json_conf["scale_viz"]);
+  const auto ALPHA_HS = static_cast<float>(json_conf["alpha_hs"]);
 
   OptFlow opt_flow(WIDTH, HEIGHT, TAU, G_REG, ALPHA_HS, KERN_HALF, KERN_HALF_HS);
 
@@ -79,7 +77,7 @@ int main(int argc, char **argv)
   SDL_Renderer *renderer;
 
   window = SDL_CreateWindow("Optical Flow Demo", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, WIND_WIDTH, WIND_HEIGHT, SDL_WINDOW_OPENGL);
-  if (window == NULL)
+  if (window == nullptr)
   {
     std::cout << "Error window creation";
     return 3;
@@ -139,8 +137,11 @@ int main(int argc, char **argv)
   std::chrono::steady_clock::time_point end = std::chrono::steady_clock::now();
 
   std::cout << "Elapsed time in microseconds: " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << std::endl;
-  std::cout << "Processed " << events.num_events / (std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1000000.0) << " events per second" << std::endl;
-  std::cout << "Required by Dataset: " << events.num_events / (stream_events.t_max / 1000000.0) << " events per second" << std::endl;
+  std::cout << "Processed " << events.num_events / (
+        std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() / 1e6) << " events per second"
+      <<
+      std::endl;
+  std::cout << "Required by Dataset: " << events.num_events / (stream_events.t_max / 1e6) << " events per second" << std::endl;
   SDL_DestroyWindow(window);
   SDL_DestroyRenderer(renderer);
   SDL_Quit();

@@ -1,16 +1,16 @@
 #ifndef OPT_FLOW_H
 #define OPT_FLOW_H
 
-#include <stdint.h>
+#include <cstdint>
 
 class OptFlow
 {
 public:
-    OptFlow(int _width, int _height, float _tau, float _g_reg, float _alpha_hs, int _kern_half, int _kern_half_hs);
+    OptFlow(int _width, int _height, float _tau, float _g_reg, float _alpha_hs, uint8_t _kern_half, uint8_t _kern_half_hs);
     ~OptFlow();
 
-    void update_flow(uint32_t *t, uint16_t *x, uint16_t *y, uint8_t *p,
-                     float *u, float *v, int n_events);
+    void update_flow(const uint32_t *t, const uint16_t *x, const uint16_t *y, const uint8_t *p,
+                     float *u, float *v, int n_events) const;
 
 private:
     int width;
@@ -45,10 +45,10 @@ private:
     float kern_norm;
     float kern_norm_hs;
 
-    float t_weight(float dt);
+    float t_weight(float dt) const;
 
-    float kern_weight(int dx, int dy);
-    float kern_weight_hs(int dx, int dy);
+    float kern_weight(int dx, int dy) const;
+    float kern_weight_hs(int dx, int dy) const;
 };
 
 #endif // !OPT_FLOW_H

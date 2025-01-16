@@ -1,11 +1,10 @@
-#include <stdint.h>
-#include <math.h>
-#include <iostream>
-#include <omp.h>
+#include <cmath>
+#include <cstdint>
 #include "opt_flow.h"
 
 
-OptFlow::OptFlow(int _width, int _height, float _tau, float _g_reg, float _alpha_hs, int _kern_half, int _kern_half_hs)
+OptFlow::OptFlow(const int _width, const int _height,
+    const float _tau, const float _g_reg, const float _alpha_hs, const uint8_t _kern_half, const uint8_t _kern_half_hs)
 {
     width = _width;
     height = _height;
@@ -47,10 +46,10 @@ OptFlow::OptFlow(int _width, int _height, float _tau, float _g_reg, float _alpha
     tau = _tau;
     g_reg = _g_reg;
     alpha_hs = _alpha_hs;
-    kern_half = (uint8_t)(_kern_half);
-    kern_size = (uint16_t)((2 * kern_half + 1) * (2 * kern_half + 1));
-    kern_half_hs = (uint8_t)(_kern_half_hs);
-    kern_size_hs = (uint16_t)((2 * kern_half_hs + 1) * (2 * kern_half_hs + 1));
+    kern_half = _kern_half;
+    kern_size = static_cast<uint16_t>((2 * kern_half + 1) * (2 * kern_half + 1));
+    kern_half_hs = _kern_half_hs;
+    kern_size_hs = static_cast<uint16_t>((2 * kern_half_hs + 1) * (2 * kern_half_hs + 1));
 
     kern_norm = 0.0;
     for(int dx = -kern_half; dx < kern_half + 1; dx++){
@@ -85,22 +84,17 @@ OptFlow::~OptFlow()
     delete[] t_prev_n;
 };
 
-void OptFlow::update_flow(uint32_t *t, uint16_t *x, uint16_t *y, uint8_t *p,
-                          float *u, float *v, int n_events)
-{
-    
-    uint8_t pol;
-    float _t;
+void OptFlow::update_flow(const uint32_t *t, const uint16_t *x, const uint16_t *y, const uint8_t *p,
+                          float *u, float *v, const int n_events) const {
     for (int i = 0; i < n_events; i++)
     {
-        pol = p[i];
-        _t = t[i];
-        int idx = x[i] + y[i] * width;
-        if (idx < n_pix)
+        const uint8_t pol = p[i];
+        const float _t = t[i];
+        if (const int idx = x[i] + y[i] * width; idx < n_pix)
         {
-            
-            float dt = (pol == 1 ? (_t - t_prev_p[idx]) : (_t - t_prev_n[idx]))/1000.0;
-            float wt = t_weight(dt);
+
+            const float dt = (pol == 1 ? (_t - t_prev_p[idx]) : (_t - t_prev_n[idx]))/1000.0f;
+            const float wt = t_weight(dt);
 
             if(pol == 1){
                 a_t2_p[idx] = wt * (dt * dt * a_t0_p[idx] + 2 * dt * a_t1_p[idx] + a_t2_p[idx]);
@@ -138,32 +132,29 @@ void OptFlow::update_flow(uint32_t *t, uint16_t *x, uint16_t *y, uint8_t *p,
                     float _a_t1 = 0.0;
                     float _a_t2 = 0.0;
                     float wt_pair = 0.0;
-                    
-                    float _u_filt = 0.0;
-                    float _v_filt = 0.0;
 
                     if(pol==1){
-                        float dt = (_t - t_prev_p[idx2])/1000.0;
-                        wt_pair = t_weight(dt);
+                        const float dt1 = (_t - t_prev_p[idx2])/1000.0f;
+                        wt_pair = t_weight(dt1);
                         _a_t0 = a_t0_p[idx2];
                         _a_t1 = a_t1_p[idx2];
                         _a_t2 = a_t2_p[idx2];
-                        _u_filt = u_filt_p[idx2];
-                        _v_filt = v_filt_p[idx2];
+                        //_u_filt = u_filt_p[idx2];
+                        //_v_filt = v_filt_p[idx2];
                     } else {
-                        float dt = (_t - t_prev_n[idx2])/1000.0;
-                        wt_pair = t_weight(dt);
+                        const float dt1 = (_t - t_prev_n[idx2])/1000.0f;
+                        wt_pair = t_weight(dt1);
                         _a_t0 = a_t0_n[idx2];
                         _a_t1 = a_t1_n[idx2];
                         _a_t2 = a_t2_n[idx2];
-                        _u_filt = u_filt_n[idx2];
-                        _v_filt = v_filt_n[idx2];
+                        //_u_filt = u_filt_n[idx2];
+                        //_v_filt = v_filt_n[idx2];
                     }
 
-                    _d_alpha_x = wx * wt_pair * (-dx * (dt * _a_t0 + _a_t1) + 1000*_u_filt);
-                    _d_alpha_y = wx * wt_pair * (-dy * (dt * _a_t0 + _a_t1) + 1000*_v_filt);
+                    _d_alpha_x = wx * wt_pair * (-dx * (dt * _a_t0 + _a_t1) + 1000*(u_filt_p[idx2] + u_filt_n[idx2]));
+                    _d_alpha_y = wx * wt_pair * (-dy * (dt * _a_t0 + _a_t1) + 1000*(v_filt_p[idx2] + v_filt_n[idx2]));
 
-                    _d_beta += wx * wt_pair * (dt * dt * _a_t0 + 2 * dt * _a_t1 + _a_t2 + 1000*_a_t0);
+                    _d_beta += wx * wt_pair * (dt * dt * _a_t0 + 2 * dt * _a_t1 + _a_t2 + 1000*(a_t0_p[idx2]+a_t0_n[idx2]));
                 }
                 
 
@@ -267,17 +258,14 @@ void OptFlow::update_flow(uint32_t *t, uint16_t *x, uint16_t *y, uint8_t *p,
     }
 };
 
-float OptFlow::t_weight(float dt)
-{
-    return exp(-dt / tau);// * (dt >= 0);
+float OptFlow::t_weight(const float dt) const {
+    return std::exp(-dt / tau);// * (dt >= 0);
 };
 
-float OptFlow::kern_weight(int dx, int dy)
-{
-    return exp(-(dx * dx + dy * dy) / (2 * 0.09 * kern_half * kern_half));
+float OptFlow::kern_weight(const int dx, const int dy) const {
+    return std::exp(-(dx * dx + dy * dy) / (2.f * 0.09f * kern_half * kern_half));
 };
 
-float OptFlow::kern_weight_hs(int dx, int dy)
-{
-    return exp(-(dx * dx + dy * dy) / (2 * 0.09 * kern_half_hs * kern_half_hs));
+float OptFlow::kern_weight_hs(const int dx, const int dy) const {
+    return std::exp(-(dx * dx + dy * dy) / (2.f * 0.09f * kern_half_hs * kern_half_hs));
 };

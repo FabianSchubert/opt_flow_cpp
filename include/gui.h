@@ -3,7 +3,7 @@
 
 #include <SDL2/SDL.h>
 
-void update_texture(SDL_Texture *tex, uint8_t *data, int n_data);
+void update_texture(SDL_Texture *tex, const uint8_t *data, int n_data);
 
 int init_sdl();
 

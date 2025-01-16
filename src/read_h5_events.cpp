@@ -4,18 +4,18 @@
 #include <vector>
 #include <iostream>
 
-ReadH5Events::ReadH5Events(std::string file_name):
+ReadH5Events::ReadH5Events(const std::string &file_name):
   FILE_NAME(file_name), 
   file(file_name, H5F_ACC_RDONLY)
 {
   int _num_events = 0;
   bool _num_events_set = false;
 
-  for (auto dataset_name : DATASET_NAMES) {
+  for (const auto& dataset_name : DATASET_NAMES) {
     dataset = new H5::DataSet(file.openDataSet(dataset_name));
     dataspace = new H5::DataSpace(dataset->getSpace());
-    dataspace->getSimpleExtentDims(dims_out, NULL);
-    size_t num_elements = dims_out[0];
+    dataspace->getSimpleExtentDims(dims_out, nullptr);
+    const size_t num_elements = dims_out[0];
     if (dataset_name == "t") {
       _t = new uint32_t[num_elements];
       dataset->read(_t, H5::PredType::NATIVE_UINT32);
@@ -67,35 +67,35 @@ ReadH5Events::~ReadH5Events() {
   delete _v;
 };
 
-int ReadH5Events::height() {
+int ReadH5Events::height() const {
   return _width_height[1];
 };
 
-int ReadH5Events::width() {
+int ReadH5Events::width() const {
   return _width_height[0];
 };
 
-uint32_t ReadH5Events::t(int i) {
+uint32_t ReadH5Events::t(const int i) const {
   return _t[i];
 };
 
-uint16_t ReadH5Events::x(int i) {
+uint16_t ReadH5Events::x(const int i) const {
   return _x[i];
 };
 
-uint16_t ReadH5Events::y(int i) {
+uint16_t ReadH5Events::y(const int i) const {
   return _y[i];
 };
 
-uint8_t ReadH5Events::p(int i) {
+uint8_t ReadH5Events::p(const int i) const {
   return _p[i];
 };
 
-float ReadH5Events::u(int i) {
+float ReadH5Events::u(const int i) const {
   return _u[i];
 };
 
-float ReadH5Events::v(int i) {
+float ReadH5Events::v(const int i) const {
   return _v[i];
 };
 

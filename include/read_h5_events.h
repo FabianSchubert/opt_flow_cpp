@@ -7,21 +7,21 @@
 
 class ReadH5Events {
   public:
-    ReadH5Events(std::string file_name); 
+    explicit ReadH5Events(const std::string &file_name);
 
     ~ReadH5Events();
 
-    int height();
-    int width();
+    int height() const;
+    int width() const;
 
     int num_events;
 
-    uint32_t t(int i);
-    uint16_t x(int i);
-    uint16_t y(int i);
-    uint8_t p(int i);
-    float u(int i);
-    float v(int i);
+    uint32_t t(int i) const;
+    uint16_t x(int i) const;
+    uint16_t y(int i) const;
+    uint8_t p(int i) const;
+    float u(int i) const;
+    float v(int i) const;
     
     uint32_t* _t;
     uint16_t* _x;
@@ -29,7 +29,7 @@ class ReadH5Events {
     uint8_t* _p;
     float* _u;
     float* _v;
-    uint32_t _width_height[2];
+    uint32_t _width_height[2]{};
 
   private:
     std::string FILE_NAME;
@@ -38,7 +38,7 @@ class ReadH5Events {
     H5::H5File file;
     H5::DataSet* dataset;
     H5::DataSpace* dataspace;
-    hsize_t dims_out[1];
+    hsize_t dims_out[1]{};
 };
 
 

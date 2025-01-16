@@ -6,7 +6,7 @@
 
 class StreamEvents {
   public:
-    StreamEvents(std::string file_name, float _dt);
+    StreamEvents(const std::string &file_name, float _dt);
     ~StreamEvents();
 
     // get the next bin of events

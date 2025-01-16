@@ -1,7 +1,7 @@
 #include "stream_events.h"
 #include <iostream>
 
-StreamEvents::StreamEvents(std::string file_name, float _dt): events(file_name)
+StreamEvents::StreamEvents(const std::string &file_name, const float _dt): events(file_name)
 {
   num_events = events.num_events;
 
@@ -21,7 +21,7 @@ StreamEvents::StreamEvents(std::string file_name, float _dt): events(file_name)
   }
   std::cout << "t_max: " << t_max << std::endl;
 
-  n_bins = int(t_max / dt) + 1;
+  n_bins = static_cast<int>(t_max / dt) + 1;
   
   // bin edges refers to indices of events, not their times.
   // but events should be placed in the bins based on equally spaced times.
@@ -31,8 +31,7 @@ StreamEvents::StreamEvents(std::string file_name, float _dt): events(file_name)
   }
 
   for(int i=0; i<num_events;i++){
-    int bin_id = int(events.t(i)/dt);
-    bin_id_end[bin_id] = i + 1;
+    bin_id_end[static_cast<int>(events.t(i) / dt)] = i + 1;
   }
   // if bin_id_end[i] = 0, replace it with bin_id_end[i-1]
   for(int i=1; i<n_bins;i++){
